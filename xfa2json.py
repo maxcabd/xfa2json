@@ -1,9 +1,11 @@
 from typing import Any
 
+import io
 import copy
 import json
 from json import loads
 import xml.etree.ElementTree as ET
+import csv
 import yaml
 import PyPDF2 as pypdf
 
@@ -12,7 +14,6 @@ class Xfa:
     """
     A class for converting XFA data in a PDF to JSON or XML.
     """
-
     def __init__(self, filepath: str) -> None:
         self.filepath = filepath
 
@@ -55,7 +56,7 @@ class Xfa:
 
         # Otherwise, create a dictionary for the element's children and attributes
         d = {}
-        
+
         for child in children:
             key = child.tag
             value = cls.element_to_dict(child)
@@ -70,6 +71,22 @@ class Xfa:
         # Add attributes as key-value pairs in the dictionary
         d.update(element.attrib)
         return d
+    
+    @staticmethod
+    def _flatten_dict(d: dict, parent_key='', sep='_') -> dict:
+        """
+        Flattens a nested dictionary to a single level.
+        """
+        items = []
+        for key, value in d.items():
+            new_key = f"{parent_key}{sep}{key}" if parent_key else key
+
+            if isinstance(value, dict):
+                items.extend(Xfa._flatten_dict(value, new_key, sep=sep).items())
+            else:
+                items.append((new_key, value))
+
+        return dict(items)
 
     def get_xml(self) -> str:
         """
@@ -109,8 +126,29 @@ class Xfa:
         """
         json_dict = self.get_json()
         return yaml.dump(json_dict)
+    
+    def get_csv(self) -> str:
+        """
+        Returns the CSV data from the XFA field of a PDF.
+        """
+        json_dict = self.get_json()
+        if not json_dict:
+            raise Exception("No XFA data found in PDF.")
 
-    def convert(self, output: str = 'json') -> dict:
+        flattened_dict = self._flatten_dict(json_dict)
+        headers = flattened_dict.keys()
+        rows = [flattened_dict]
+
+        csv_output = io.StringIO()
+        writer = csv.DictWriter(csv_output, fieldnames=headers)
+
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
+        return csv_output.getvalue()
+
+    def convert(self, output: str = 'json') -> Any:
         """
         Converts the XFA data of a PDF to JSON or XML.
         """
@@ -120,12 +158,14 @@ class Xfa:
             return self.get_xml()
         elif output == 'yaml':
             return self.get_yaml()
+        elif output == 'csv':
+            return self.get_csv()
         else:
             raise Exception(
-                "Invalid output format. Please use 'json' or 'xml'.")
+                "Invalid output format. Please use 'json', 'xml', 'yaml', or 'csv'.")
 
 
 if __name__ == '__main__':
     PATH = "C:\\Users\\13439\\Desktop\\CNSC\\Assesment Worksheet\\FINAL-DYNAMIC-eng - filled.PDF"
     xfa = Xfa(PATH)
-    print(xfa.convert('yaml'))
+    print(xfa.convert('csv'))
