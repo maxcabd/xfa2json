@@ -170,7 +170,3 @@ class Xfa:
                 "Invalid output format. Please use 'json', 'xml', 'yaml', or 'csv'.")
 
 
-if __name__ == '__main__':
-    PATH = "C:\\Users\\13439\\Desktop\\CNSC\\Assesment Worksheet\\FINAL-DYNAMIC-eng - filled.PDF"
-    xfa = Xfa(PATH)
-    print(xfa.convert('csv'))
