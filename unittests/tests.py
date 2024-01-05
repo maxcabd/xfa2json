@@ -9,14 +9,12 @@ from xfa import Xfa
 
 
 
-# Assuming your test PDF file is in the same directory as your test file
 TEST_PDF_DOC = "test_pdf.pdf"
 
 
 def test_get_xml():
     xfa = Xfa(TEST_PDF_DOC)
 
-    # Mocking PdfReader to return a specific XFA data
     with patch("PyPDF2.PdfReader") as mock_pdf_reader:
         mock_pdf_reader.return_value.isEncrypted = False
         mock_pdf_reader.return_value.decrypt.return_value = None
@@ -26,8 +24,7 @@ def test_get_xml():
 
 def test_get_json():
     xfa = Xfa(TEST_PDF_DOC)
-
-    # Mocking get_xml to return a specific XML data
+    
     with patch.object(xfa, "get_xml", return_value="<root><data>value</data></root>"):
         assert xfa.get_json() == {'root': {'data': 'value'}}
 
@@ -35,7 +32,6 @@ def test_get_json():
 def test_get_yaml():
     xfa = Xfa(TEST_PDF_DOC)
 
-    # Mocking get_json to return a specific JSON data
     with patch.object(xfa, "get_json", return_value={"root": {"data": "value"}}):
         assert xfa.get_yaml() == "root:\n  data: value\n"
 
@@ -43,7 +39,6 @@ def test_get_yaml():
 def test_get_csv():
     xfa = Xfa(TEST_PDF_DOC)
 
-    # Mocking get_json to return a specific JSON data
     with patch.object(xfa, "get_json", return_value={"root": {"data": "value"}}):
         assert xfa.get_csv() == "root_data\nvalue\n"
 
@@ -51,7 +46,6 @@ def test_get_csv():
 def test_convert():
     xfa = Xfa(TEST_PDF_DOC)
 
-    # Mocking get_json to return a specific JSON data
     with patch.object(xfa, "get_json", return_value={"root": {"data": "value"}}):
         assert xfa.convert(output='json') == {"root": {"data": "value"}}
 
