@@ -24,12 +24,12 @@ xfa.save(ext = "yaml") # Converts and saves the xfa instance to a yaml file with
 ```
 
 These are the current file types supported for conversion:
-```
+
 * CSV
 * JSON
 * XML
 * YAML
-```
+
 
 # License
 This project uses the MIT License, feel free to include it in whatever you want.
